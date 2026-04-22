@@ -18,24 +18,23 @@ run("npx", ["prisma", "generate"]);
 if (!process.env.DATABASE_URL) {
   if (onVercel) {
     console.error(
-      "\n[build] DATABASE_URL が Vercel の Environment Variables にありません。\n" +
-        "    Vercel ダッシュボード → 該当プロジェクト → Settings → Environment Variables で\n" +
-        "    Production（と Preview）に Postgres の接続文字列を追加し、再デプロイしてください。\n",
+      "\n[build] DATABASE_URL is not set on Vercel.\n" +
+        "    Dashboard → Project → Settings → Environment Variables → add Postgres URL for Production and Preview, then Redeploy.\n" +
+        "    (Neon: https://neon.tech — copy connection string, often with ?sslmode=require)\n",
     );
     process.exit(1);
   }
-  console.warn("[build] DATABASE_URL 未設定のため prisma migrate deploy をスキップします。");
+  console.warn("[build] DATABASE_URL not set; skipping prisma migrate deploy.");
 } else {
   run("npx", ["prisma", "migrate", "deploy"]);
 }
 
 if (onVercel && !process.env.AUTH_SECRET) {
   console.error(
-    "\n[build] AUTH_SECRET が Vercel の Environment Variables にありません。\n" +
-      "    例: openssl rand -base64 32 の出力を AUTH_SECRET に設定してください。\n" +
-      "    Production と Preview の両方に同じ値を設定するか、\n" +
-      "    Project Settings → Environment Variables で Preview にもチェックを付けてください。\n" +
-      "    AUTH_URL にはデプロイ後に表示される本番 URL（…vercel.app）を設定してください。\n",
+    "\n[build] AUTH_SECRET is not set on Vercel.\n" +
+      "    Generate: openssl rand -base64 32\n" +
+      "    Add the value for Production and Preview (same secret).\n" +
+      "    Set AUTH_URL to your production https://….vercel.app URL.\n",
   );
   process.exit(1);
 }
