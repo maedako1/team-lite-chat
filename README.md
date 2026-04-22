@@ -63,16 +63,13 @@ npm run build
 - 長寿命 **WebSocket** はサーバーレスでは使わず、ポーリングで代替している。
 - `postinstall` で `prisma generate` を実行しているため、Vercel のインストール段階でもクライアントが生成される。
 
-## GitHub へ新規プッシュ（手元で未設定の場合）
+## リポジトリ
 
-```bash
-git init   # 未初期化なら
-git add .
-git commit -m "Initial Team Lite Chat MVP"
-gh repo create team-lite-chat --public --source=. --remote=origin --push
-```
+このプロジェクトのソースは次の GitHub リポジトリにプッシュ済みです。
 
-リポジトリ名を変える場合は `gh repo create <名前> ...` を置き換える。`gh` が無い場合は GitHub 上で空リポジトリを作成し、`git remote add origin ...` のあと `git push -u origin main` する。
+https://github.com/maedako1/team-lite-chat
+
+別アカウントや名前で管理する場合は、GitHub 上で空リポジトリを作成してから `git remote set-url origin ...` と `git push -u origin main` で差し替えてください。
 
 ## 技術スタック
 
