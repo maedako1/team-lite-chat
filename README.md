@@ -44,19 +44,43 @@ npm run build
 
 ## Vercel にデプロイする
 
+このリポジトリは Vercel プロジェクト **team-lite-chat** に紐付け済みです。本番 URL の一例:
+
+`https://team-lite-chat-kootamaeda-9743s-projects.vercel.app`
+
+（チームやリネームにより異なる場合は、Vercel ダッシュボードの **Domains** を確認し、`AUTH_URL` をその URL と一致させてください。）
+
+### ビルドが失敗する・ログインできないとき（必須チェック）
+
+1. **[Neon](https://neon.tech/) などで PostgreSQL を作成**し、接続文字列をコピーする（Neon では **Transaction** 用 URL を Prisma に使うのが無難。末尾に `?sslmode=require` を付与する場合あり）。
+2. Vercel → プロジェクト **team-lite-chat** → **Settings** → **Environment Variables** で **`DATABASE_URL`** を追加し、**Production と Preview の両方**に適用する（変数行を編集し、チェックボックスで両方オン）。
+3. 同様に **`AUTH_SECRET`** も Preview に適用する（Production のみだと、プレビューデプロイのビルドで失敗することがあります）。
+4. **`AUTH_URL`** は上記の本番ドメイン（`https://…vercel.app`）と**完全一致**にする。カスタムドメインを付けたら、その `https://` URL に更新する。
+5. 保存後、**Deployments** から **Redeploy** する。
+
+CLI で追加する例:
+
+```bash
+npx vercel env add DATABASE_URL production --value "postgresql://..." --yes
+```
+
+（Preview 用にも同じ値を設定する場合はダッシュボードで Environments を複数選択するのが簡単です。）
+
+### 手順（新規 Import する場合）
+
 1. GitHub にこのリポジトリをプッシュする。
 2. [Vercel](https://vercel.com/) で **Import** し、同じリポジトリを選ぶ。
 3. **Environment Variables** に次を設定する（Production / Preview 両方推奨）。
 
 | 変数名 | 説明 |
 |--------|------|
-| `DATABASE_URL` | マネージド Postgres の接続文字列（SSL 必須のプロバイダが多い）。 |
-| `AUTH_SECRET` | ランダムな長い文字列。ローカルで `openssl rand -base64 32` などで生成。 |
-| `AUTH_URL` | デプロイ後の本番 URL（例: `https://your-project.vercel.app`）。Preview 用に別 URLは通常不要だが、認証リダイレクトで問題が出る場合は Vercel のドキュメントに従い `trustHost` 済みの本設定を確認。 |
+| `DATABASE_URL` | マネージド Postgres の接続文字列。 |
+| `AUTH_SECRET` | ランダムな長い文字列。`openssl rand -base64 32` など。 |
+| `AUTH_URL` | デプロイ後に確定する本番の `https://…vercel.app`。 |
 
-4. **Build Command** はデフォルトの `npm run build` のままでよい。ビルド時に `prisma migrate deploy` が走り、スキーマが DB に適用される。
+4. **Build Command** はデフォルトの `npm run build` のままでよい。`prisma migrate deploy` がビルド内で実行される。
 
-5. 初回デプロイ後、サイトにアクセスしてユーザー登録 → ワークスペース作成まで通ることを確認する。
+5. デプロイ後、ユーザー登録 → ワークスペース作成まで通ることを確認する。
 
 ### Vercel での注意
 

@@ -12,5 +12,6 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/w/:path*"],
+  // `/w/:path*` alone does not match `/w` exactly in Next.js matchers
+  matcher: ["/w", "/w/:path*"],
 };
