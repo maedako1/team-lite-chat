@@ -102,7 +102,7 @@ https://github.com/maedako1/team-lite-chat
 - Auth.js（`next-auth` v5 beta）Credentials + JWT
 - Tailwind CSS 4
 
-詳細は [docs/architecture.md](docs/architecture.md) を参照。
+要件の全体像は [docs/prd.md](docs/prd.md)、構成は [docs/architecture.md](docs/architecture.md) を参照。
 
 ## ライセンス
 
