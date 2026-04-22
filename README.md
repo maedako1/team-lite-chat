@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Team Lite Chat
 
-## Getting Started
+Slack 風のチームチャット MVP（Next.js 16 · PostgreSQL · Prisma · Auth.js）。**Vercel** 上のサーバーレス向けに、メッセージ更新は **約 2 秒のポーリング**（`?since=` 差分取得）で実装しています。
 
-First, run the development server:
+## 機能
+
+- メール + パスワードの登録 / ログイン（bcrypt ハッシュ）
+- ワークスペース作成（自動で `#general` チャンネル）
+- チャンネル一覧・作成（名前は `^[a-z0-9][a-z0-9-]{0,78}$`）
+- 招待リンク（7 日有効、API で生成）
+- メッセージ投稿・履歴（最大 8000 文字）
+
+## ローカル開発
+
+1. Node.js 20+ を用意する。
+2. PostgreSQL の `DATABASE_URL` を用意する（[Neon](https://neon.tech/) など）。
+3. 環境変数を設定する。
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
+# .env を編集
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. マイグレーションと開発サーバー。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx prisma migrate deploy
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
 
-## Learn More
+### ビルド（DB 接続なしで型チェックのみしたい場合）
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build:next
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+本番相当（マイグレーション込み）は `DATABASE_URL` が有効な状態で:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+```
 
-## Deploy on Vercel
+## Vercel にデプロイする
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. GitHub にこのリポジトリをプッシュする。
+2. [Vercel](https://vercel.com/) で **Import** し、同じリポジトリを選ぶ。
+3. **Environment Variables** に次を設定する（Production / Preview 両方推奨）。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 変数名 | 説明 |
+|--------|------|
+| `DATABASE_URL` | マネージド Postgres の接続文字列（SSL 必須のプロバイダが多い）。 |
+| `AUTH_SECRET` | ランダムな長い文字列。ローカルで `openssl rand -base64 32` などで生成。 |
+| `AUTH_URL` | デプロイ後の本番 URL（例: `https://your-project.vercel.app`）。Preview 用に別 URLは通常不要だが、認証リダイレクトで問題が出る場合は Vercel のドキュメントに従い `trustHost` 済みの本設定を確認。 |
+
+4. **Build Command** はデフォルトの `npm run build` のままでよい。ビルド時に `prisma migrate deploy` が走り、スキーマが DB に適用される。
+
+5. 初回デプロイ後、サイトにアクセスしてユーザー登録 → ワークスペース作成まで通ることを確認する。
+
+### Vercel での注意
+
+- 長寿命 **WebSocket** はサーバーレスでは使わず、ポーリングで代替している。
+- `postinstall` で `prisma generate` を実行しているため、Vercel のインストール段階でもクライアントが生成される。
+
+## GitHub へ新規プッシュ（手元で未設定の場合）
+
+```bash
+git init   # 未初期化なら
+git add .
+git commit -m "Initial Team Lite Chat MVP"
+gh repo create team-lite-chat --public --source=. --remote=origin --push
+```
+
+リポジトリ名を変える場合は `gh repo create <名前> ...` を置き換える。`gh` が無い場合は GitHub 上で空リポジトリを作成し、`git remote add origin ...` のあと `git push -u origin main` する。
+
+## 技術スタック
+
+- Next.js 16（App Router）
+- Prisma 5 + PostgreSQL
+- Auth.js（`next-auth` v5 beta）Credentials + JWT
+- Tailwind CSS 4
+
+詳細は [docs/architecture.md](docs/architecture.md) を参照。
+
+## ライセンス
+
+MIT（必要に応じて変更してください）。
